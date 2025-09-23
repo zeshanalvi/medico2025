@@ -18,3 +18,15 @@ def classify_question_type(question):
     outputs = router_model(**inputs)
     pred = torch.argmax(outputs.logits, dim=1).item()
     return pred
+
+class QuestionTypeClassifier(nn.Module):
+    def __init__(self, hidden=768, num_types=len(q_types)):
+        super().__init__()
+        self.fc = nn.Linear(hidden, num_types)
+
+    def forward(self, q_feat):
+        return self.fc(q_feat)  # logits [B, 6]
+        
+qtype_classifier=QuestionTypeClassifier().to(device)
+
+
