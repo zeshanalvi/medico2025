@@ -2,16 +2,17 @@ from qtype import QuestionTypeClassifier
 from tpred import TaskPredictor
 from model import VQAModel
 from fussionmodel import CoAttentionFusion
-from functions import preprocess_example, preprocess_image
+from functions import preprocess_example, preprocess_image, collate_fn
 import torch
 import torch.nn as nn
 from datasets import load_dataset
+from torch.utils.data import DataLoader
 
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(device)
     
-    samples=30
+    samples=10
     print("Dataset Loading...")
 
     ds_train = load_dataset("SimulaMet/Kvasir-VQA-x1", split="train")
@@ -27,10 +28,18 @@ if __name__ == "__main__":
         val_dataset = split_dataset_dict['test']
 
     print("Loading Images...")
-    image_cache = {}
+    
     train_data = train_dataset.map(preprocess_example)
     val_data = val_dataset.map(preprocess_example)
     print("Images Loaded")
+
+    
+    print("Making Data Loader...")
+
+    train_loader = DataLoader(train_data, batch_size=16, shuffle=True, collate_fn=collate_fn)
+    val_loader = DataLoader(val_data, batch_size=16, shuffle=False, collate_fn=collate_fn)
+
+    print("Data Loader Completed")
 
 
 

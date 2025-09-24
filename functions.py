@@ -10,8 +10,10 @@ transformten = transforms.Compose([
                              std=[0.229, 0.224, 0.225])
     ])
 from collections import defaultdict
+from torch.utils.data import DataLoader
+import os
 
-
+image_cache = {}
 
 def preprocess_image(image_source):
     """
@@ -162,4 +164,32 @@ def build_answer_vocab(dataset, q_types_mapping):
             counters[general_class] += 1
 
     return answer_vocab
+
+
+
+def collate_fn(batch):
+    #print(type(batch[0]["image"]))
+    
+    #images = torch.stack([item["image"] for item in batch])
+    images = torch.stack([torch.tensor(item["image"]) if isinstance(item["image"], list) else item["image"] for item in batch])
+    
+    #print(type(images), images.shape)
+
+
+    input_ids = torch.stack([torch.tensor(item["input_ids"]) if isinstance(item["input_ids"], list) else item["input_ids"] for item in batch])
+    attention_mask = torch.stack([torch.tensor(item["attention_mask"]) if isinstance(item["attention_mask"], list) else item["attention_mask"] for item in batch])
+
+
+    
+    #input_ids = torch.stack([item["input_ids"] for item in batch])
+    #attention_mask = torch.stack([item["attention_mask"] for item in batch])
+    answers = [item["answer"] for item in batch]  # keep as list for label encoding later
+    q_classes = [item["question_class"] for item in batch]
+    return {
+        "images": images,
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "answers": answers,
+        "question_classes": q_classes,
+    }
 
