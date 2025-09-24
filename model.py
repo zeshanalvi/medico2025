@@ -62,7 +62,7 @@ class VQAModel(nn.Module):
         self.train_data=train_data
         self.train_loader=train_loader
         self.answer_vocabs = build_answer_vocab(self.train_data, self.q_types_mapping)
-        self.task_vocabs=build_vocabs(self.train_data,self.q_types_mapping)
+        self.task_vocabs = build_vocabs(self.train_data,self.q_types_mapping)
         #self.qtype_classifier = nn.Linear(hidden_dim, len(self.task_vocabs))   # ✅ match hidden_dim
         self.qtype_classifier=QuestionTypeClassifier(num_types=len(self.q_types)).to(self.device)
         #QuestionTypeClassifier(hidden=self.input_dim, num_types=len(self.q_types)).to(device)
