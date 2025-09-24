@@ -2,7 +2,7 @@ from torch.nn import CrossEntropyLoss, MSELoss
 import re
 #!pip install rouge_score
 
-from rouge_score import rouge_scorer
+#from rouge_score import rouge_scorer
 
 from nltk.translate.meteor_score import meteor_score
 
@@ -202,8 +202,8 @@ def compute_loss(preds, answers, task_logits, true_q_classes, answer_vocabs,q_ty
 
     meteor = compute_meteor(preds, answers, answer_vocabs, mapped_classes)
     print(f"Validation METEOR: {meteor:.4f}")
-    rouge = compute_rouge(preds, answers, answer_vocabs, mapped_classes)
-    print(f"Validation ROUGE-L: {rouge:.4f}")
+    #rouge = compute_rouge(preds, answers, answer_vocabs, mapped_classes)
+    #print(f"Validation ROUGE-L: {rouge:.4f}")
 
     
     return total_loss / len(preds)
