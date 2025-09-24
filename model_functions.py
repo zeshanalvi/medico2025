@@ -1,5 +1,7 @@
 from torch.nn import CrossEntropyLoss, MSELoss
 import re
+!pip install rouge_score
+
 from rouge_score import rouge_scorer
 
 from nltk.translate.meteor_score import meteor_score
