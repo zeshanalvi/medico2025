@@ -5,7 +5,7 @@ import re
 #from rouge_score import rouge_scorer
 
 from nltk.translate.meteor_score import meteor_score
-
+from .models import disease_model
 
 def forward_batch(images, input_ids, attention_mask, answers, question_classes=None,qtype_classifier=None,fusion_module=None,q_types=None,q_types_mapping=None,task_heads=None,device=None,image_encoder=None,question_encoder=None):
     # Image encoding
