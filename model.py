@@ -94,7 +94,8 @@ class VQAModel(nn.Module):
                     q_types=self.q_types,
                     q_types_mapping=self.q_types_mapping,
                     task_heads=self.task_heads,
-                    device=self.device
+                    device=self.device,
+                    image_encoder=self.image_encoder
                 )
                 #preds, answers = forward_batch(batch["images"],batch["input_ids"], batch["attention_mask"], batch["answers"], batch["question_classes"])
                 loss = compute_loss(preds,
