@@ -424,7 +424,9 @@ class VQAModel(nn.Module):
                     q_types=self.q_types,
                     q_types_mapping=self.q_types_mapping,
                     task_heads=self.task_heads,
-                    device=self.device
+                    device=self.device,
+                    image_encoder=self.image_encoder,
+                    question_encoder=self.question_encoder
                 )
 
                 loss = compute_loss(
