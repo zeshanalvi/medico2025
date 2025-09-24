@@ -417,7 +417,7 @@ class VQAModel(nn.Module):
             n_batches = 0
 
             for batch in train_loader:
-                optimizer.zero_grad()
+                self.optimizer.zero_grad()
 
                 # Forward: use same forward_batch signature as your train()
                 preds, answers, task_logits = forward_batch(
@@ -448,7 +448,7 @@ class VQAModel(nn.Module):
                 )
 
                 loss.backward()
-                optimizer.step()
+                self.optimizer.step()
 
                 running_loss += loss.item()
                 n_batches += 1
