@@ -10,7 +10,7 @@ from datasets import load_dataset
 from torch.utils.data import DataLoader
 """
 
-#from .functions import preprocess_example, preprocess_image, collate_fn
-#from .model import VQAModel
+from .functions import preprocess_example, preprocess_image, collate_fn
+from .model import VQAModel
 
 
