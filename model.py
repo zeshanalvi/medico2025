@@ -13,10 +13,10 @@ class VQAModel(nn.Module):
     def __init__(self,img_dim, ques_dim, disease_dim, hidden_dim):
         super(VQAModel, self).__init__()
         #self.fusion = CoAttentionFusion(img_dim, ques_dim, disease_dim, hidden_dim, answer_vocab=answer_vocab)
-        self.qtype_classifier=QuestionTypeClassifier(num_types=6).to(self.device)
         self.answer_classifier=None
         self.epochs=1
         self.device=torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.qtype_classifier=QuestionTypeClassifier(num_types=6).to(self.device)
         self.hidden_dim=hidden_dim
         self.input_dim=768
         self.ques_dim=ques_dim
