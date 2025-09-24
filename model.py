@@ -59,7 +59,7 @@ class VQAModel(nn.Module):
     
     def train(self,epochs,data_train,train_loader):
         self.epochs=epochs
-        self.train_data=train_data
+        self.train_data=data_train
         self.train_loader=train_loader
         self.answer_vocabs = build_answer_vocab(self.train_data, self.q_types_mapping)
         self.task_vocabs = build_vocabs(self.train_data,self.q_types_mapping)
@@ -112,6 +112,7 @@ class VQAModel(nn.Module):
                 total_loss += loss.item()
             print(f"Epoch {epoch}, Train Loss: {total_loss / len(train_loader)}")
     
+
     def eval(self, val_loader):
         """
         Evaluate the model on the validation set.
