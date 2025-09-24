@@ -95,7 +95,8 @@ class VQAModel(nn.Module):
                     q_types_mapping=self.q_types_mapping,
                     task_heads=self.task_heads,
                     device=self.device,
-                    image_encoder=self.image_encoder
+                    image_encoder=self.image_encoder,
+                    question_encoder=self.question_encoder
                 )
                 #preds, answers = forward_batch(batch["images"],batch["input_ids"], batch["attention_mask"], batch["answers"], batch["question_classes"])
                 loss = compute_loss(preds,
@@ -224,29 +225,7 @@ class VQAModel(nn.Module):
         avg_loss = total_loss / len(val_loader)
         return avg_loss, all_preds, all_answers
 
-    def eval_old(self,val_loader):
-        fusion_module.eval()
-        with torch.no_grad():
-            total_loss = 0
-            for batch in val_loader:
-                preds, answers, task_logits = forward_batch(
-                    batch["images"],
-                    batch["input_ids"],
-                    batch["attention_mask"],
-                    batch["answers"],
-                    batch["question_classes"],
-                    device=self.device
-                )
-                loss = compute_loss(
-                    preds,
-                    answers,
-                    task_logits,
-                    batch["question_classes"],
-                    self.answer_vocabs
-                )
-                total_loss += loss.item()
-            print(f"Validation Loss: {total_loss / len(val_loader)}")
-
+    
     def load(self,load_path = "vqa_model.pt"):
         checkpoint = torch.load(load_path, map_location=self.device,weights_only=False)
         self.task_vocabs=checkpoint["task_vocabs"]
