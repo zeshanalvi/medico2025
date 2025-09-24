@@ -393,8 +393,15 @@ class VQAModel(nn.Module):
                 params += list(self.disease_model.parameters())
 
         # create optimizer
-        optimizer = torch.optim.AdamW(params, lr=lr)
-        self.optimizer = optimizer  # update model optimizer if other code expects it
+        #optimizer = torch.optim.AdamW(params, lr=lr)
+        self.optimizer = torch.optim.AdamW(
+            list(self.fusion_module.parameters()) + 
+            list(self.question_encoder.parameters()) + 
+            list(self.image_encoder.parameters()) + 
+            list(self.qtype_classifier.parameters()), 
+            lr=2e-5
+        )
+        #self.optimizer = optimizer  # update model optimizer if other code expects it
 
         best_val_loss = float("inf")
         best_epoch = -1
