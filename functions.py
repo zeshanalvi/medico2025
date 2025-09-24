@@ -12,6 +12,7 @@ transformten = transforms.Compose([
 from collections import defaultdict
 from torch.utils.data import DataLoader
 import os
+from transformers import AutoTokenizer
 
 image_cache = {}
 
@@ -40,7 +41,8 @@ def preprocess_example(example):
     # Download image
     #image = Image.open(requests.get(example["image"], stream=True).raw).convert("RGB")
 
-    
+    router_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+
     #Image from dataset
     image_name = example["image"].split("/")[-1]
     image_path = os.path.join("/kaggle/input/medico2025", image_name)
