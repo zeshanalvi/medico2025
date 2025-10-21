@@ -1,0 +1,22 @@
+# Core scientific stack
+numpy==1.26.4
+pandas==2.2.3
+opencv-python==4.10.0.84
+scikit-image==0.24.0
+scikit-learn==1.5.2
+matplotlib==3.9.2
+tqdm==4.66.5
+
+# Deep learning and transformers
+torch==2.4.0
+torchvision==0.19.0
+transformers==4.44.2
+
+
+# Git utility
+gitpython==3.1.43
+
+# My Libraries
+dtreenetwork==1.2.1
+# My custom libraries (auto-installed from GitHub)
+git+https://github.com/zeshanalvi/Feature-Extraction.git

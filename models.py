@@ -19,11 +19,52 @@ def generate_descriptive_answer(question, prediction, fused_features):
     outputs = gen_model.generate(**inputs, max_length=50)
     return gen_tokenizer.decode(outputs[0], skip_special_tokens=True)
 
+from git import Repo
+import os
+
+def clone_repo():
+    repo_url = "https://github.com/zeshanalvi/Feature-Extraction.git"
+    destination = "./Feature-Extraction"
+    Repo.clone_from(repo_url, destination)
+    print("Repository cloned successfully!")
+
+def clone_repo():
+    repo_url = "https://github.com/zeshanalvi/Feature-Extraction.git"
+    destination = "./Feature-Extraction"
+    
+    # Skip if repo already exists
+    if os.path.exists(destination):
+        print(f"Repository already exists at {destination}. Skipping clone.")
+        return    
+    print("Cloning repository...")
+    Repo.clone_from(repo_url, destination)
+    print("Repository cloned successfully.")
+
 def disease_model(img):
+    #!git clone https://github.com/zeshanalvi/Feature-Extraction.git
+    clone_repo()
+    import sys, os
+    repo_path = os.path.abspath("Feature-Extraction")
+    if repo_path not in sys.path:
+        sys.path.append(repo_path)
+    from features import extract_features_batch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    #torch.tensor(np.random.rand(23)).to(device)
-    return torch.zeros(23).to(device)
+    res=extract_features_batch(img)
+    #print(type(res))
+    #print(res)
+    #!pip install dtreenetwork
+    from treenet import TreeNet
+    model = TreeNet(layer_count=6, breath_count=3)
+    model.load("medico2025\\treenet_model63.pkl")
+    pred=model.predict_prob(res)
+    #print(type(pred))
+    #print(pred)
+    #print(pred.shape)
+    disease_vec=torch.tensor(pred, dtype=torch.float32).to(device)
+    #print(type(disease_vec))
+    #print(disease_vec)
+    #return torch.tensor(np.random.rand(23)).to(device)
+    return disease_vec
 
 router_name = "distilbert-base-uncased"
 router_tokenizer = AutoTokenizer.from_pretrained(router_name)
-

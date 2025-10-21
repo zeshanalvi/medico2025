@@ -1,47 +1,31 @@
-
-print("Dataset Loading...")
 from datasets import load_dataset
-#ds = load_dataset("SimulaMet-HOST/Kvasir-VQA")
-ds_train = load_dataset("SimulaMet/Kvasir-VQA-x1", split="train")
-ds_test = load_dataset("SimulaMet/Kvasir-VQA-x1", split="test")
-print("Dataset Loaded")
+from pathlib import Path
+from tqdm import tqdm
+import os, json
 
-print(ds_train)
-print(ds_test)
+# Output folder
+d_path = "D:\\datasets\\medico_test\\"
+img_dir = Path(os.path.abspath(os.path.join(d_path, "images")))
+img_dir.mkdir(exist_ok=True, parents=True)
 
-from PIL import Image
-import requests
-import os
+# Download original images once from SimulaMet-HOST/Kvasir-VQA
+ds_host = load_dataset("SimulaMet-HOST/Kvasir-VQA", split="raw")
+_, idx = np.unique(ds_host["img_id"], return_index=True)
+ds = ds.select(sorted(idx))
+existing = set(p.stem for p in img_dir.glob("*.jpg"))
+for row in tqdm(ds, desc="Saving unique images"):
+    if row["img_id"] in existing: 
+        continue
+    row["image"].save(img_dir / f"{row['img_id']}.jpg")
 
-def preprocess_example(example):
-    # Set the directory where images will be saved
-    download_dir = "D:\\datasets\\medico_test\\"
-
-    # Create the directory if it doesn't exist
-    if not os.path.exists(download_dir):
-        os.makedirs(download_dir)
-
-    # Get the image URL and determine the local path
-    image_url = example["image"]
-    image_name = image_url.split("/")[-1]
-    image_path = os.path.join(download_dir, image_name)
-
-    # Check if the image has already been downloaded
-    if not os.path.exists(image_path):
-        # Download the image
-        response = requests.get(image_url, stream=True)
-        response.raise_for_status()  # Raise an exception for bad status codes
-        
-        # Save the image to the specified directory
-        with open(image_path, "wb") as f:
-            for chunk in response.iter_content(1024):
-                f.write(chunk)
-
-    # Pack features
-    return image_path
-
-print("Loading Images...")
-image_cache = {}
-#train_data = ds_train.map(preprocess_example)
-val_data = ds_test.map(preprocess_example)
-print("Images Loaded")
+# Save VLM-ready JSONLs (pointing to ORIGINAL images)
+for split in ["train", "test"]:
+    with open(f"{d_path}/Kvasir-VQA-x1-{split}.jsonl", "w", encoding="utf-8") as f:
+        for r in load_dataset("SimulaMet/Kvasir-VQA-x1", split=split):
+            f.write(json.dumps({
+                "messages": [
+                    {"role": "user", "content": f"<image>{r['question']}"},
+                    {"role": "assistant", "content": r["answer"]}
+                ],
+                "images": [str(img_dir / f"{r['img_id']}.jpg")]
+            }, ensure_ascii=False) + "\n")
