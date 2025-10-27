@@ -3,7 +3,7 @@ import torch.nn as nn
 import os
 from .qtype import QuestionTypeClassifier
 from .functions import build_vocabs, build_answer_vocab, collate_fn, preprocess_example, normalize_answer, preprocess_image
-from .models import disease_model, device, generate_descriptive_answer, router_tokenizer, gen_model
+from .models import disease_model,diseasem, device, generate_descriptive_answer, router_tokenizer, gen_model
 from .tpred import TaskPredictor
 from .model_functions import compute_loss, compute_meteor, compute_rouge, extract_count, forward_batch
 from .fussionmodel import BertModel, CoAttentionFusion, ViTModel, F
@@ -267,7 +267,7 @@ class VQAModel(nn.Module):
         }, save_path)
         print(f"Model saved at {save_path}")
 
-    def predict(self, image, question):
+    def predict(self,dmodel, image, question):
         self.fusion_module.eval()
         self.question_encoder.eval()
         self.image_encoder.eval()
@@ -278,7 +278,7 @@ class VQAModel(nn.Module):
             image_tensor = preprocess_image(image).unsqueeze(0).to(self.device)
     
             # ---- Disease vector ----
-            disease_vec = disease_model(image_tensor)
+            disease_vec = diseasem(dmodel,image_tensor)
     
             # ---- Encode question ----
             q_inputs = router_tokenizer(
