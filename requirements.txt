@@ -11,6 +11,12 @@ tqdm==4.66.5
 torch==2.4.0
 torchvision==0.19.0
 transformers==4.44.2
+evaluate
+rouge-score
+absl-py
+datasets
+nlkt
+sentencepiece
 
 
 # Git utility
