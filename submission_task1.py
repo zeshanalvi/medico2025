@@ -10,6 +10,10 @@ import platform
 import sys
 
 from evaluate import load
+import torch
+torch.cuda.empty_cache()
+torch.backends.cudnn.benchmark = True
+
 
 bleu = load("bleu")
 rouge = load("rouge")
