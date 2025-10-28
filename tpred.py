@@ -209,16 +209,29 @@ class TaskPredictor(nn.Module):
     def forward(self, x, **kwargs):
         # Load model on-demand
         self._lazy_load()
-
+        
+        if isinstance(x, torch.Tensor):
+            return self.head(x)
+        
         if self.task_type == "yesno":
             inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
             outputs = self.head.generate(**inputs, max_length=5, num_beams=2)
             return [self.tokenizer.decode(o, skip_special_tokens=True).strip().lower() for o in outputs]
-
+        
         elif self.task_type == "single":
             inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
             outputs = self.head.generate(**inputs, max_length=64)
             return [self.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
+
+        #if self.task_type == "yesno":
+        #    inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
+        #    outputs = self.head.generate(**inputs, max_length=5, num_beams=2)
+        #    return [self.tokenizer.decode(o, skip_special_tokens=True).strip().lower() for o in outputs]
+
+        #elif self.task_type == "single":
+        #    inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
+        #    outputs = self.head.generate(**inputs, max_length=64)
+        #    return [self.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
 
         elif self.task_type == "multi":
             # x = list of (question, choices)
