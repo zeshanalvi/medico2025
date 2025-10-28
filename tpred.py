@@ -50,6 +50,42 @@ class TaskPredictor(nn.Module):
             raise ValueError(f"Unknown task type: {self.task_type}")
 
         self._loaded = True
+    
+    def forward(self, x, **kwargs):
+        self._lazy_load()
+
+        # --- If input is tensor, just forward it ---
+        if isinstance(x, torch.Tensor):
+            return self.head(x.to(self.device))
+
+        # --- Otherwise, assume text input ---
+        if self.task_type in ["yesno", "single", "count"]:
+            if isinstance(x, str):
+                x = [x]  # single string → list
+            inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
+            outputs = self.head.generate(**inputs, max_length=64)
+            return [self.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
+
+        elif self.task_type == "multi":
+            # x = list of (question, choices)
+            encoded = self.tokenizer(
+                [[q + " " + c for c in choice] for q, choice in x],
+                return_tensors="pt", padding=True, truncation=True
+            ).to(self.device)
+            outputs = self.head(**encoded)
+            return outputs.logits
+
+        elif self.task_type == "color":
+            images = x
+            inputs = self.processor(images=images, return_tensors="pt").to(self.device)
+            outputs = self.head.generate(**inputs)
+            return [self.processor.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
+
+        elif self.task_type == "location":
+            inputs = self.processor(**kwargs, return_tensors="pt").to(self.device)
+            outputs = self.head.generate(**inputs, max_length=64)
+            return [self.processor.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
+
 
     def forward(self, x, **kwargs):
         self._lazy_load()
