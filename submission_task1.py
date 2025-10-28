@@ -15,7 +15,6 @@ bleu = load("bleu")
 rouge = load("rouge")
 meteor = load("meteor")
 
-
 ds = load_dataset("SimulaMet/Kvasir-VQA-x1")["test"]
 ds_shuffled = ds.shuffle(seed=42) # Shuffle with fixed seed for reproducibility
 val_dataset = ds_shuffled.select(range(1500)) # Select first 1500 after shuffle
