@@ -59,10 +59,11 @@ from .functions import preprocess_example, collate_fn
 
 
 model = VQAModel(img_dim=768, ques_dim=768, disease_dim=23, hidden_dim=512).to(device)
-model.load("Medico2025/vqa.pt")
+model.load("Medico2025/vqa.pt")# Path to the model weights
 from treenet import TreeNet
-modeld = TreeNet(layer_count=6, breath_count=3)
-modeld.load("Medico2025/treenet_model63.pkl")
+disease_model = TreeNet(layer_count=6, breath_count=3)
+weights_treenet="Medico2025/treenet_model63.pkl"#Path to the treenet weights
+disease_model.load(weights_treenet)
 val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, collate_fn=collate_fn)
 #res=model.eval(val_loader)
 
@@ -82,7 +83,7 @@ for idx, ex in enumerate(tqdm(val_dataset, desc="Validating")):
 
 # ✏️✏️___________EDIT SECTION 2: ANSWER GENERATION___________✏️✏️#
     # 🔹 TODO: PARTICIPANTS CAN MODIFY THIS TOKENIZATION STEP IF NEEDED 🔹
-    answer=model.predict(dmodel=modeld,image=image,question=question)
+    answer=model.predict(disease_model=disease_model,image=image,question=question)
     #inputs = processor(text=[question], images=[image],
     #                   return_tensors="pt", padding=True)
     #inputs = {k: v.to(device) for k, v in inputs.items()
