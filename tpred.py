@@ -4,7 +4,15 @@
 import torch.nn as nn
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModelForSeq2SeqLM, AutoModelForMultipleChoice, AutoModelForVision2Seq, Blip2ForConditionalGeneration, AutoProcessor
+from transformers import (
+    AutoTokenizer, 
+    AutoModelForSeq2SeqLM, 
+    AutoModelForMultipleChoice, 
+    AutoModelForVision2Seq, 
+    Blip2ForConditionalGeneration, 
+    AutoProcessor, 
+    BlipForConditionalGeneration
+)
 
 
 class TaskPredictor(nn.Module):
@@ -20,20 +28,32 @@ class TaskPredictor(nn.Module):
             self.head = AutoModelForSeq2SeqLM.from_pretrained("facebook/bart-base")
         elif task_type == "multi":
             #self.head = nn.Linear(hidden, 10)
-            self.tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
-            self.head = AutoModelForMultipleChoice.from_pretrained("microsoft/deberta-v3-base")
+            #self.tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-v3-base")
+            #self.head = AutoModelForMultipleChoice.from_pretrained("microsoft/deberta-v3-base")
+            #Lighter versions
+            self.tokenizer = AutoTokenizer.from_pretrained("microsoft/deberta-base")
+            self.head = AutoModelForMultipleChoice.from_pretrained("microsoft/deberta-base")
         elif task_type == "color":
             #self.head = nn.Linear(hidden, 5)
-            self.tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
-            self.head = AutoModelForVision2Seq.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+            #self.tokenizer = AutoTokenizer.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+            #self.head = AutoModelForVision2Seq.from_pretrained("nlpconnect/vit-gpt2-image-captioning")
+            #Lighter Version
+            self.processor = AutoProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+            self.head = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
         elif task_type == "location":
             #self.head = nn.Linear(hidden, 6)
-            self.processor = AutoProcessor.from_pretrained("Salesforce/blip2-flan-t5-xl")
-            self.head = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-xl")
+            #self.processor = AutoProcessor.from_pretrained("Salesforce/blip2-flan-t5-xl")
+            #self.head = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-xl")
+            #Lighter Version
+            self.processor = AutoProcessor.from_pretrained("Salesforce/blip2-flan-t5-base")
+            self.head = Blip2ForConditionalGeneration.from_pretrained("Salesforce/blip2-flan-t5-base")
         elif task_type == "count":
             #self.head = nn.Linear(hidden, 1)
-            self.tokenizer = AutoTokenizer.from_pretrained("t5-large")
-            self.head = AutoModelForSeq2SeqLM.from_pretrained("t5-large")
+            #self.tokenizer = AutoTokenizer.from_pretrained("t5-large")
+            #self.head = AutoModelForSeq2SeqLM.from_pretrained("t5-large")
+            #Lighter Version
+            self.tokenizer = AutoTokenizer.from_pretrained("t5-base")
+            self.head = AutoModelForSeq2SeqLM.from_pretrained("t5-base")
         else:
             raise ValueError("Unknown task")
     
