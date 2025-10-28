@@ -83,6 +83,7 @@ for idx, ex in enumerate(tqdm(val_dataset, desc="Validating")):
 
 # ✏️✏️___________EDIT SECTION 2: ANSWER GENERATION___________✏️✏️#
     # 🔹 TODO: PARTICIPANTS CAN MODIFY THIS TOKENIZATION STEP IF NEEDED 🔹
+    #answer=model.predict(disease_model=None,image=image,question=question)
     answer=model.predict(disease_model=disease_model,image=image,question=question)
     #inputs = processor(text=[question], images=[image],
     #                   return_tensors="pt", padding=True)
