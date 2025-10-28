@@ -10,9 +10,10 @@ import platform
 import sys
 
 from evaluate import load
-import torch
-torch.cuda.empty_cache()
-torch.backends.cudnn.benchmark = True
+
+#import torch
+#torch.cuda.empty_cache()
+#torch.backends.cudnn.benchmark = True
 
 
 bleu = load("bleu")
@@ -25,8 +26,7 @@ val_dataset = ds_shuffled.select(range(1500)) # Select first 1500 after shuffle
 val_dataset = val_dataset.cast_column("image", HfImage())
 predictions = []  # List to store predictions
 
-gpu_name = torch.cuda.get_device_name(
-    0) if torch.cuda.is_available() else "cpu"
+gpu_name = torch.cuda.get_device_name(0) if torch.cuda.is_available() else "cpu"
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
 
@@ -59,7 +59,6 @@ import torch.nn as nn
 from datasets import load_dataset
 from torch.utils.data import DataLoader
 from .functions import preprocess_example, collate_fn
-
 
 model = VQAModel(img_dim=768, ques_dim=768, disease_dim=23, hidden_dim=512).to(device)
 model.load("Medico2025/vqa.pt")# Path to the model weights
