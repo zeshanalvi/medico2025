@@ -45,10 +45,11 @@ def clone_repo():
 
 def diseasem(model,img):
     clone_repo()
-    from features import extract_features_batch
+    
     repo_path = os.path.abspath("Feature-Extraction")
     if repo_path not in sys.path:
         sys.path.append(repo_path)
+    from features import extract_features_batch
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     res=extract_features_batch(img)
     pred=model.predict_prob(res)
