@@ -46,7 +46,7 @@ def preprocess_example(example):
     #Image from dataset
     image_name = example["image"].split("/")[-1]
     image_path = os.path.join("/kaggle/input/medico2025/me2025", image_name)
-    print(image_path)
+    #print(image_path)
 
     # 2. Check if the image is already in our cache
     if image_path in image_cache:
