@@ -33,8 +33,8 @@ class VQAModel(nn.Module):
         self.answer_classifier=nn.Linear(self.hidden_dim, 100)
         # Create task-specific heads (trainable)
         self.task_heads = nn.ModuleDict({
-            t: TaskPredictor(t, hidden=hidden_dim) for t in self.q_types
-        })
+            t: TaskPredictor(t, hidden=hidden_dim, device=self.device) for t in self.q_types
+            })
         self.q_types_mapping = {
             'abnormality_color': 'color',
             'landmark_color': 'color',
