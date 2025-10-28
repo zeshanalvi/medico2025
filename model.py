@@ -267,7 +267,7 @@ class VQAModel(nn.Module):
         }, save_path)
         print(f"Model saved at {save_path}")
 
-    def predict(self,dmodel, image, question):
+    def predict(self,disease_model, image, question):
         self.fusion_module.eval()
         self.question_encoder.eval()
         self.image_encoder.eval()
@@ -278,7 +278,10 @@ class VQAModel(nn.Module):
             image_tensor = preprocess_image(image).unsqueeze(0).to(self.device)
     
             # ---- Disease vector ----
-            disease_vec = diseasem(dmodel,image_tensor)
+            if(disease_model):
+                disease_vec = diseasem(disease_model,image_tensor)
+            else:
+                disease_vec = disease_model(image_tensor)
     
             # ---- Encode question ----
             q_inputs = router_tokenizer(
