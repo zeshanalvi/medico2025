@@ -61,7 +61,11 @@ class TaskPredictor(nn.Module):
             config = AutoConfig.from_pretrained(model_name)
             config.num_labels = 35  # <-- number of possible answer choices in your task
             # Initialize model with updated config
-            self.head = AutoModelForMultipleChoice.from_pretrained(model_name,config=config,ignore_mismatched_sizes=True,low_cpu_mem_usage=True).to(self.device)
+            self.head = AutoModelForMultipleChoice.from_pretrained(model_name,config=config,ignore_mismatched_sizes=True,low_cpu_mem_usage=True)
+            # Force materialization of meta tensors
+            self.head.to_empty(device=self.device)
+            self.head.load_state_dict(self.head.state_dict())  # ensures data tensors
+            self.head.to(self.device)
             #self.head = AutoModelForMultipleChoice.from_pretrained(model_name,low_cpu_mem_usage=True).to(self.device)# Warning multiple choice and single
             self.head.gradient_checkpointing_enable()
 
