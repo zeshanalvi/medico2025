@@ -60,11 +60,25 @@ from datasets import load_dataset
 from torch.utils.data import DataLoader
 from .functions import preprocess_example, collate_fn
 
+
 model = VQAModel(img_dim=768, ques_dim=768, disease_dim=23, hidden_dim=512).to(device)
-model.load("Medico2025/vqa.pt")# Path to the model weights
+import os
+model_path="Medico2025/vqa.pt"
+weights_treenet="Medico2025/treenet_model63.pkl"
+if os.name == "nt":
+    print("Running on Windows")
+    model_path="C:\\Users\\Zeeshan\\Documents\\GitHub\\Medico2025\\vqa.pt"
+    weights_treenet="C:\\Users\\Zeeshan\\Documents\\GitHub\\Medico2025\\treenet_model63.pkl"
+elif os.name == "posix":
+    print("Running on Linux or macOS")
+    model_path="Medico2025/vqa.pt"
+    weights_treenet="Medico2025/treenet_model63.pkl"
+
+model.load(model_path)
 from treenet import TreeNet
 disease_model = TreeNet(layer_count=6, breath_count=3)
-weights_treenet="Medico2025/treenet_model63.pkl"#Path to the treenet weights
+ #Path to the treenet weights
+
 disease_model.load(weights_treenet)
 val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False, collate_fn=collate_fn)
 #res=model.eval(val_loader)

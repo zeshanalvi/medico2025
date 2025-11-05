@@ -37,16 +37,15 @@ def preprocess_image(image_source):
 
     return image  # torch.Tensor [3, H, W]
     
-def preprocess_example(example):
+def preprocess_example(example,data_path):
     # Download image
     #image = Image.open(requests.get(example["image"], stream=True).raw).convert("RGB")
 
-    router_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased")
+    router_tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased",legacy=False)# New Behaviour
 
     #Image from dataset
     image_name = example["image"].split("/")[-1]
-    image_path = os.path.join("/kaggle/input/medico2025/me2025", image_name)
-    #print(image_path)
+    image_path = os.path.join(data_path, image_name)
 
     # 2. Check if the image is already in our cache
     if image_path in image_cache:
@@ -81,6 +80,7 @@ def preprocess_example(example):
         "input_ids": input_ids,
         "attention_mask": attention_mask,
         "answer": example["answer"],
+        "question": example["question"],
         "question_class": example["question_class"],
         "image_url": example["image"],
     }
@@ -187,12 +187,14 @@ def collate_fn(batch):
     #input_ids = torch.stack([item["input_ids"] for item in batch])
     #attention_mask = torch.stack([item["attention_mask"] for item in batch])
     answers = [item["answer"] for item in batch]  # keep as list for label encoding later
+    question = [item["question"] for item in batch]  # keep as list for label encoding later
     q_classes = [item["question_class"] for item in batch]
     return {
         "images": images,
         "input_ids": input_ids,
         "attention_mask": attention_mask,
         "answers": answers,
+        "question": question,
         "question_classes": q_classes,
     }
 
