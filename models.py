@@ -12,9 +12,9 @@ from transformers import (
 )
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-gen_name = "t5-base"
-gen_tokenizer = T5Tokenizer.from_pretrained(gen_name)
-gen_model = T5ForConditionalGeneration.from_pretrained(gen_name).to(device)
+#gen_name = "t5-base"
+gen_tokenizer = T5Tokenizer.from_pretrained("t5-base")
+gen_model = T5ForConditionalGeneration.from_pretrained("t5-base").to(device)
 
 def generate_descriptive_answer(question, prediction, fused_features):
     # Construct a prompt combining prediction and context
