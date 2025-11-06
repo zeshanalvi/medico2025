@@ -36,6 +36,8 @@ def forward_batch(images, input_ids, attention_mask, question, answers, question
     # The model call
     with torch.no_grad(): # Disable gradient calculations since we're not training
         # The ** operator unpacks the dictionary into keyword arguments
+        if(input_ids.min()<=0 or input_ids.max()>=tokenizer.vocab_size - 1):
+            input_ids = torch.clamp(input_ids, min=0, max=tokenizer.vocab_size - 1)
         bert_question_last = question_encoder(input_ids=input_ids,attention_mask=attention_mask)
     # The outputs are typically a tuple, with the primary output being the last hidden state
     encoded_questions = bert_question_last.last_hidden_state
