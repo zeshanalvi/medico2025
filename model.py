@@ -9,7 +9,7 @@ from .model_functions import compute_loss, compute_meteor, compute_rouge, extrac
 from .fussionmodel import BertModel, CoAttentionFusion, ViTModel, F
 from transformers import BertTokenizer
 from transformers import AutoTokenizer, AutoModel
-from transformers.utils import move_cache
+#from transformers.utils import move_cache
 
 class VQAModel(nn.Module):
     def __init__(self,img_dim, ques_dim, disease_dim, hidden_dim):
