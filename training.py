@@ -15,6 +15,7 @@ parser.add_argument("-s","--batch", type=int, default=16, help="Batch size")
 parser.add_argument("-b","--batches", type=int, default=0, help="Batches if set as zero then whole data will be processed")
 parser.add_argument("-f","--finetune", type=int, default=0, help="Finetune-1 or Retrain-0")
 parser.add_argument("-w","--weights", type=str, default="na", help="Weights File Path")
+parser.add_argument("-bs","--startbatch", type=int, default=0, help="Start from Batch")
 
 # Parse arguments
 args = parser.parse_args()
@@ -26,6 +27,7 @@ finetune=False
 if(args.finetune==1):
     finetune=True
 weights_path=args.weights
+st_batch=args.startbatch
 
 from .functions import preprocess_example, collate_fn
 
@@ -64,7 +66,7 @@ print("Total Batches\t",batches)
 
 
 
-for b in range(batches):
+for b in range(st_batch,batches):
     print("Processing Batch \t",b+1)
     batch=ds_train.select(range(b*batch_size,min((b+1)*batch_size,ds_train.num_rows)))
     split_dataset_dict = batch.train_test_split(test_size=0.2, seed=42)
