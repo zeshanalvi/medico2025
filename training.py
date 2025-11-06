@@ -13,6 +13,8 @@ parser = argparse.ArgumentParser(description="Example of labeled arguments")
 parser.add_argument("-e","--epochs", type=int, default=1, help="Number of Epochs")
 parser.add_argument("-s","--batch", type=int, default=16, help="Batch size")
 parser.add_argument("-b","--batches", type=int, default=0, help="Batches if set as zero then whole data will be processed")
+parser.add_argument("-f","--finetune", type=int, default=0, help="Finetune-1 or Retrain-0")
+parser.add_argument("-w","--weights", type=str, default="na", help="Weights File Path")
 
 # Parse arguments
 args = parser.parse_args()
@@ -20,6 +22,10 @@ args = parser.parse_args()
 batch_size=args.batch
 batches=args.batches
 epochs=args.epochs
+finetune=False
+if(args.finetune==1):
+    finetune=True
+weights_path=args.weights
 
 from .functions import preprocess_example, collate_fn
 
@@ -103,12 +109,15 @@ for b in range(batches):
     
     print("Model Training...")
     
-    if(b==0):
+    if(b==0 and finetune==False):
         model.train_model(epochs=epochs,data_train=train_data,train_loader=train_loader,disease_model=disease_model)
         model.save("vqan_"+str(b%10)+".pt")
         print("Batch ",str(b+1)," Completed")
     else:
-        model.load("vqan_"+str(b%10)+".pt")
+        if(finetune==True):
+            model.load("vqan_"+str(b%10)+".pt")
+        else:
+            model.load(weights_path)
         #model.fine_tune_model(train_loader=train_loader,val_loader=val_loader,epochs=1,unfreeze_encoders=False,save_best_path=None,validate_every=1)
         #model.fine_tune_model(epochs=epochs, data_train=train_data, train_loader=train_loader, disease_model=disease_model, checkpoint_path="vqan_"+str((b)%10)+".pt")
         model.fine_tune_model1(train_loader=train_loader,
