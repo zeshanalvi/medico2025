@@ -43,7 +43,7 @@ class TaskPredictor(nn.Module):
     def _lazy_load(self):
         if self._loaded:
             return  
-        if self.task_type in ["yesno", "single", "color"]:
+        if self.task_type in ["yesno", "single"]:#, "color"]:
             model_name = "google/flan-t5-small" # 1 GB
             self.tokenizer = AutoTokenizer.from_pretrained(model_name,low_cpu_mem_usage=True)
             self.head = AutoModelForSeq2SeqLM.from_pretrained(model_name,low_cpu_mem_usage=True).to(self.device)
@@ -101,7 +101,7 @@ class TaskPredictor(nn.Module):
 
         self._loaded = True
 
-    def forward(self, x, question, **kwargs):
+    def forward(self, x, question,raw_image=None, **kwargs):
         # Load model on-demand
         self._lazy_load()
 
@@ -110,6 +110,7 @@ class TaskPredictor(nn.Module):
         #print("task_type",self.task_type)
         #print("question_embedings",self.question_embedings(question,x))
 
+        #if self.device == "cuda":# May get errors on GPU machine
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
 
@@ -120,7 +121,7 @@ class TaskPredictor(nn.Module):
         prompt = f"Question: {question}\nImage features: {image_text}\nAnswer:"
 
         # ---------- YES/NO, SINGLE, LOCATION, COUNT ----------
-        if self.task_type in ["yesno", "single", "location", "count", "color"]:
+        if self.task_type in ["yesno", "single", "location", "count"]:#, "color"]:
             inputs = self.tokenizer(
                 prompt, return_tensors="pt", truncation=True, padding=True, max_length=128
             ).to(self.device)
@@ -159,7 +160,7 @@ class TaskPredictor(nn.Module):
             return pred.item(), outputs.logits
 
         # ---------- COLOR ----------
-        elif self.task_type == "color":
+        elif self.task_type == "color1":
             # x should be actual images, e.g., [B, 3, H, W] tensors or PIL images
             prompt = f"Question: {question}"
             inputs = self.processor(images=x, text=prompt, return_tensors="pt").to(self.device)
@@ -180,6 +181,62 @@ class TaskPredictor(nn.Module):
             print("Generated caption/color:", answer)
             return answer
         
+        elif self.task_type == "color":
+            import PIL
+            # Ensure PIL image (your image already is)
+            assert isinstance(raw_image, PIL.Image.Image)
+
+            # BLIP prompt must be simple
+            prompt = question.strip()
+
+            # Processor: encode image + text
+            inputs = self.processor(
+                images=raw_image,
+                text=prompt,
+                return_tensors="pt"
+            ).to(self.device)
+
+            # Generate output
+            outputs = self.head.generate(
+                **inputs,
+                max_new_tokens=10
+            )
+
+            # Decode caption answer
+            answer = self.processor.tokenizer.decode(
+                outputs[0],
+                skip_special_tokens=True
+            ).strip().lower()
+
+            #print("BLIP color answer:", answer)
+            return answer
+        
+        elif self.task_type == "color2":
+            # raw_question is an image tensor shaped [1, 3, H, W]
+            print(type(raw_image),raw_image)
+            prompt = f"Question: {question}"
+
+            inputs = self.processor(
+                images=raw_image,
+                text=prompt,
+                return_tensors="pt"
+            ).to(self.device)
+
+            outputs = self.head.generate(
+                **inputs,
+                max_new_tokens=10
+            )
+
+            # Correct decoding
+            answer = self.processor.tokenizer.decode(
+                outputs[0],
+                skip_special_tokens=True
+            ).strip().lower()
+
+            print("answer for color",answer)
+
+            return answer
+
         else:
             #print("Predicting Answers...",self.task_type)
             projector = ImageToTextProjector().to(self.device)
@@ -235,51 +292,4 @@ class TaskPredictor(nn.Module):
         joint_vector = torch.cat([image_vector, question_pooled], dim=1)  # [1, 1024]
         print("Joint vector shape:", joint_vector.shape)
         return joint_vector
-
-
-def extrac_code():
-    if self.task_type == "yesno":
-        print("Predicting Answers...\n\n\n")
-        projector = ImageToTextProjector().to(self.device)
-        with torch.no_grad():
-            projected = projector(x)
-        image_text = " ".join([f"{v:.3f}" for v in projected[0].tolist()])
-        prompt = f"Question: {question}\nImage features: {image_text}\nAnswer:"
-        inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, padding=True).to(self.device)
-        outputs = self.vqa_model.generate(**inputs, max_length=50)
-        answer = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
-        print("Question\t",question,"\nPredicted Answer\t", answer)
-        return answer
     
-    elif self.task_type == "single":
-        inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
-        outputs = self.head.generate(**inputs, max_length=64)
-        return [self.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
-
-    elif self.task_type == "multi":
-        # x = list of (question, choices)
-        encoded = self.tokenizer(
-            [[q + " " + c for c in choice] for q, choice in x],
-            return_tensors="pt", padding=True, truncation=True
-        ).to(self.device)
-        outputs = self.head(**encoded)
-        return outputs.logits
-
-    elif self.task_type == "color":
-        images = x
-        inputs = self.processor(images=images, return_tensors="pt").to(self.device)
-        outputs = self.head.generate(**inputs)
-        return [self.processor.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
-
-    elif self.task_type == "location":
-        inputs = self.processor(**kwargs, return_tensors="pt").to(self.device)
-        outputs = self.head.generate(**inputs, max_length=64)
-        return [self.processor.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
-
-    elif self.task_type == "count":
-        inputs = self.tokenizer(x, return_tensors="pt", padding=True, truncation=True).to(self.device)
-        outputs = self.head.generate(**inputs, max_length=10)
-        return [self.tokenizer.decode(o, skip_special_tokens=True) for o in outputs]
-    
-    else:
-        return self.head(x)
