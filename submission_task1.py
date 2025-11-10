@@ -67,14 +67,15 @@ model_path="Medico2025/vqa.pt"
 weights_treenet="Medico2025/treenet_model63.pkl"
 if os.name == "nt":
     print("Running on Windows")
-    model_path="C:\\Users\\Zeeshan\\Documents\\GitHub\\Medico2025\\vqa.pt"
+    #model_path="C:\\Users\\Zeeshan\\Documents\\GitHub\\Medico2025\\vqa.pt"
+    model_path="vqan_0.pt"
     weights_treenet="C:\\Users\\Zeeshan\\Documents\\GitHub\\Medico2025\\treenet_model63.pkl"
 elif os.name == "posix":
     print("Running on Linux or macOS")
-    model_path="Medico2025/vqa.pt"
+    model_path="vqan_0.pt"
     weights_treenet="Medico2025/treenet_model63.pkl"
 
-model.load(model_path)
+model.load(load_path=model_path)
 from treenet import TreeNet
 disease_model = TreeNet(layer_count=6, breath_count=3)
  #Path to the treenet weights
