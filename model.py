@@ -569,7 +569,8 @@ class VQAModel(nn.Module):
         with torch.no_grad():
             # ---- Preprocess image ----
             image_tensor = preprocess_image(image).unsqueeze(0).to(self.device)
-    
+            #print("image",image)
+            
             # ---- Disease vector ----
             if(disease_model):
                 disease_vec = diseasem(disease_model,image_tensor)
@@ -605,10 +606,78 @@ class VQAModel(nn.Module):
     
             # ---- Task-specific head ----
             predictor = self.task_heads[task_type]  # use pretrained head
-            pred_out = predictor(fused)
+            pred_out = predictor(fused,question,raw_image=image)
+            
+            
+            
+            
+            #print(type(pred_out),pred_out.shape)
+
+
+            pred_label=""
+
+
+
+            # -------------------------------
+            # Task-Specific Decoding
+            # -------------------------------
+            # ✅ MULTIPLE-CHOICE
+            if task_type == "multi":
+                # pred_out = (predicted_choice_idx, logits)
+                pred_idx, logits = pred_out
+                pred_label = str(pred_idx)   # default
+
+                # If vocab exists → map index → answer string
+                if task_type in self.answer_vocabs:
+                    inv_vocab = {v: k for k, v in self.answer_vocabs[task_type].items()}
+                    pred_label = inv_vocab.get(pred_idx, str(pred_idx))
+
+
+            # ✅ YES/NO, SINGLE-CHOICE, LOCATION, COUNT
+            elif task_type in ["yesno", "single", "location", "count"]:
+                # pred_out is logits → shape (1, seq_len, vocab_size)
+                logits = pred_out[:, -1, :]   # take last token
+                pred_token = torch.argmax(logits, dim=-1).item()
+                decoded = self.task_heads[task_type].tokenizer.decode(
+                    [pred_token],
+                    skip_special_tokens=True
+                ).strip()
+
+                # ✅ YES/NO normalization
+                if task_type == "yesno":
+                    if decoded.lower() in ["yes", "y", "1", "true"]:
+                        pred_label= "Yes"
+                    else:
+                        pred_label= "No"
+
+                # ✅ COUNT normalization
+                if task_type == "count":
+                    # If tokenizer produced a digit, convert to word
+                    number_words = {
+                        "0":"zero","1":"one","2":"two","3":"three","4":"four","5":"five",
+                        "6":"six","7":"seven","8":"eight","9":"nine","10":"ten"
+                    }
+                     # If model outputs a digit → convert to word
+                    if decoded.isdigit():
+                        pred_label = number_words.get(decoded, decoded)
+
+                    #pred_label=decoded
+
+
+            # ✅ COLOR (BLIP model)
+            elif task_type == "color":
+                # pred_out is already a decoded string inside TaskPredictor
+                pred_label=str(pred_out)
+
+
+            # ✅ FALLBACK
+            #else:
+                #pred_label=str(pred_out)
+
+
     
             # ---- Decode prediction ----
-            if task_type == "yesno":
+            elif task_type == "yesno":
                 pred_label = "Yes" if torch.argmax(pred_out, dim=1).item() == 1 else "No"
     
             elif task_type == "count":
@@ -622,6 +691,7 @@ class VQAModel(nn.Module):
                 else:
                     pred_label = str(ans_idx)
     
+        #print("task_type",task_type,"\n pred_label",pred_label)
         return pred_label
 
     def load(self, load_path="vqa_model.pt", strict=True, load_optimizer=True):
